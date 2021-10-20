@@ -10,7 +10,7 @@ const Scheme = require("./scheme-model");
 */
 const checkSchemeId = (req, res, next) => {
   const id = req.body.scheme_id;
-  Scheme.getById(id).then((scheme) => {
+  Scheme.findById(id).then((scheme) => {
     if (!Scheme) {
       res.status(404).json({
         message: "scheme with scheme_id <actual id> not found",

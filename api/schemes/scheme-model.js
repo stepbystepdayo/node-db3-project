@@ -1,7 +1,12 @@
 const db = require("../../data/db-config");
 
 function find() {
-  return;
+  return db("schemes as sc")
+    .select("sc.*")
+    .count("st.step_id as number_of_steps")
+    .groupBy("sc.scheme_id")
+    .innerJoin("steps as st", "sc.scheme_id", "st.scheme_id")
+    .orderBy("sc.scheme_id", "ASC");
 
   // EXERCISE A
   /*
@@ -22,7 +27,37 @@ function find() {
   */
 }
 
-function findById(scheme_id) {
+async function findById(scheme_id) {
+  const newData = {};
+  await db("schemes as sc")
+    .select("sc.scheme_name", "st.*")
+    .join("steps as st", "sc.scheme_id", "st.scheme_id")
+    .where("sc.scheme_id", `${scheme_id}`)
+    .orderBy("st.step_number", "ASC")
+    .then((data) => {
+      // this is hacking, but lets just get the schemename and id from ONE of the array object
+      // newData.scheme_name = data[0].scheme_name;
+
+      data.map((step) => {
+        if (
+          !("scheme_name" in newData) ||
+          !("scheme_id" in newData) ||
+          !("steps" in newData)
+        ) {
+          newData.scheme_id = step.scheme_id;
+          newData.scheme_name = step.scheme_name;
+          newData.steps = [];
+        }
+        console.log("this is newData!", newData);
+        newData.steps.push({
+          step_id: step.step_id,
+          step_number: step.step_number,
+          instructions: step.instructions,
+        });
+      });
+    });
+  return newData;
+
   // EXERCISE B
   /*
     1B- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`:
